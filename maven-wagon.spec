@@ -6,7 +6,7 @@
 
 Name:           %{?scl_prefix}%{pkg_name}
 Version:        2.4
-Release:        3.15%{?dist}
+Release:        3.16%{?dist}
 Epoch:          0
 Summary:        Tools to manage artifacts and deployment
 License:        ASL 2.0
@@ -28,16 +28,16 @@ BuildRequires:  %{?scl_prefix_java_common}mvn(easymock:easymock)
 BuildRequires:  %{?scl_prefix_java_common}mvn(junit:junit)
 BuildRequires:  %{?scl_prefix_java_common}mvn(log4j:log4j)
 BuildRequires:  %{?scl_prefix_java_common}mvn(nekohtml:nekohtml)
-BuildRequires:  maven30-mvn(org.apache.httpcomponents:httpclient:4.2)
-BuildRequires:  maven30-mvn(org.apache.httpcomponents:httpcore:4.2)
-BuildRequires:  maven30-mvn(org.apache.maven.plugins:maven-enforcer-plugin)
-BuildRequires:  maven30-mvn(org.apache.maven.plugins:maven-shade-plugin)
-BuildRequires:  maven30-mvn(org.apache.maven.scm:maven-scm-api)
-BuildRequires:  maven30-mvn(org.apache.maven:maven-parent:pom:)
-BuildRequires:  maven30-mvn(org.codehaus.plexus:plexus-component-metadata)
-BuildRequires:  maven30-mvn(org.codehaus.plexus:plexus-container-default)
-BuildRequires:  maven30-mvn(org.codehaus.plexus:plexus-interactivity-api)
-BuildRequires:  maven30-mvn(org.codehaus.plexus:plexus-utils)
+BuildRequires:  %{?scl_prefix}mvn(org.apache.httpcomponents:httpclient:4.2)
+BuildRequires:  %{?scl_prefix}mvn(org.apache.httpcomponents:httpcore:4.2)
+BuildRequires:  %{?scl_prefix}mvn(org.apache.maven.plugins:maven-enforcer-plugin)
+BuildRequires:  %{?scl_prefix}mvn(org.apache.maven.plugins:maven-shade-plugin)
+BuildRequires:  %{?scl_prefix}mvn(org.apache.maven.scm:maven-scm-api)
+BuildRequires:  %{?scl_prefix}mvn(org.apache.maven:maven-parent:pom:)
+BuildRequires:  %{?scl_prefix}mvn(org.codehaus.plexus:plexus-component-metadata)
+BuildRequires:  %{?scl_prefix}mvn(org.codehaus.plexus:plexus-container-default)
+BuildRequires:  %{?scl_prefix}mvn(org.codehaus.plexus:plexus-interactivity-api)
+BuildRequires:  %{?scl_prefix}mvn(org.codehaus.plexus:plexus-utils)
 BuildRequires:  %{?scl_prefix_java_common}mvn(org.eclipse.jetty:jetty-client)
 BuildRequires:  %{?scl_prefix_java_common}mvn(org.eclipse.jetty:jetty-security)
 BuildRequires:  %{?scl_prefix_java_common}mvn(org.eclipse.jetty:jetty-server)
@@ -146,7 +146,7 @@ Javadoc for %{pkg_name}.
 
 %prep
 %setup -q -n wagon-%{version}
-%{?scl:scl enable maven30 %{scl} - <<"EOF"}
+%{?scl:scl enable %{scl} - <<"EOF"}
 set -e -x
 
 %patch0 -p1
@@ -176,7 +176,7 @@ set -e -x
 %{?scl:EOF}
 
 %build
-%{?scl:scl enable maven30 %{scl} - <<"EOF"}
+%{?scl:scl enable %{scl} - <<"EOF"}
 set -e -x
 %mvn_file ":wagon-{*}" %{pkg_name}/@1
 
@@ -190,7 +190,7 @@ set -e -x
 %{?scl:EOF}
 
 %install
-%{?scl:scl enable maven30 %{scl} - <<"EOF"}
+%{?scl:scl enable %{scl} - <<"EOF"}
 set -e -x
 %mvn_install
 %{?scl:EOF}
@@ -243,6 +243,9 @@ set -e -x
 %doc LICENSE NOTICE DEPENDENCIES
 
 %changelog
+* Mon Jan 11 2016 Michal Srb <msrb@redhat.com> - 0:2.4-3.16
+- maven33 rebuild #2
+
 * Sat Jan 09 2016 Michal Srb <msrb@redhat.com> - 0:2.4-3.15
 - maven33 rebuild
 
