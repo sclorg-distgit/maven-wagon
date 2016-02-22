@@ -1,12 +1,10 @@
 %global pkg_name maven-wagon
 %{?scl:%scl_package %{pkg_name}}
-%{?maven_find_provides_and_requires}
-
-%global bname     wagon
+%{?java_common_find_provides_and_requires}
 
 Name:           %{?scl_prefix}%{pkg_name}
-Version:        2.4
-Release:        3.16%{?dist}
+Version:        2.10
+Release:        1.1%{?dist}
 Epoch:          0
 Summary:        Tools to manage artifacts and deployment
 License:        ASL 2.0
@@ -19,34 +17,24 @@ BuildArch:      noarch
 
 BuildRequires:  %{?scl_prefix_java_common}maven-local
 BuildRequires:  %{?scl_prefix_java_common}mvn(com.jcraft:jsch)
-BuildRequires:  %{?scl_prefix_java_common}mvn(commons-httpclient:commons-httpclient)
 BuildRequires:  %{?scl_prefix_java_common}mvn(commons-io:commons-io)
 BuildRequires:  %{?scl_prefix_java_common}mvn(commons-lang:commons-lang)
 BuildRequires:  %{?scl_prefix_java_common}mvn(commons-logging:commons-logging)
 BuildRequires:  %{?scl_prefix_java_common}mvn(commons-net:commons-net)
-BuildRequires:  %{?scl_prefix_java_common}mvn(easymock:easymock)
-BuildRequires:  %{?scl_prefix_java_common}mvn(junit:junit)
-BuildRequires:  %{?scl_prefix_java_common}mvn(log4j:log4j)
-BuildRequires:  %{?scl_prefix_java_common}mvn(nekohtml:nekohtml)
-BuildRequires:  %{?scl_prefix}mvn(org.apache.httpcomponents:httpclient:4.2)
-BuildRequires:  %{?scl_prefix}mvn(org.apache.httpcomponents:httpcore:4.2)
+BuildRequires:  %{?scl_prefix_java_common}mvn(org.apache.httpcomponents:httpclient)
+BuildRequires:  %{?scl_prefix_java_common}mvn(org.apache.httpcomponents:httpcore)
+BuildRequires:  %{?scl_prefix}mvn(org.apache.maven:maven-parent:pom:)
 BuildRequires:  %{?scl_prefix}mvn(org.apache.maven.plugins:maven-enforcer-plugin)
 BuildRequires:  %{?scl_prefix}mvn(org.apache.maven.plugins:maven-shade-plugin)
 BuildRequires:  %{?scl_prefix}mvn(org.apache.maven.scm:maven-scm-api)
-BuildRequires:  %{?scl_prefix}mvn(org.apache.maven:maven-parent:pom:)
 BuildRequires:  %{?scl_prefix}mvn(org.codehaus.plexus:plexus-component-metadata)
-BuildRequires:  %{?scl_prefix}mvn(org.codehaus.plexus:plexus-container-default)
 BuildRequires:  %{?scl_prefix}mvn(org.codehaus.plexus:plexus-interactivity-api)
 BuildRequires:  %{?scl_prefix}mvn(org.codehaus.plexus:plexus-utils)
-BuildRequires:  %{?scl_prefix_java_common}mvn(org.eclipse.jetty:jetty-client)
-BuildRequires:  %{?scl_prefix_java_common}mvn(org.eclipse.jetty:jetty-security)
-BuildRequires:  %{?scl_prefix_java_common}mvn(org.eclipse.jetty:jetty-server)
-BuildRequires:  %{?scl_prefix_java_common}mvn(org.eclipse.jetty:jetty-servlet)
-BuildRequires:  %{?scl_prefix_java_common}mvn(org.eclipse.jetty:jetty-util)
 BuildRequires:  %{?scl_prefix_java_common}mvn(org.jsoup:jsoup)
 BuildRequires:  %{?scl_prefix_java_common}mvn(org.slf4j:slf4j-api)
-BuildRequires:  %{?scl_prefix_java_common}mvn(xerces:xercesImpl)
-
+# not available in RHSCL, needed for wagon-ssh
+#BuildRequires:  mvn(com.jcraft:jsch.agentproxy.connector-factory)
+#BuildRequires:  mvn(com.jcraft:jsch.agentproxy.jsch)
 
 %description
 Maven Wagon is a transport abstraction that is used in Maven's
@@ -55,15 +43,8 @@ following providers:
 * File
 * HTTP
 * FTP
-* SSH/SCP
-* WebDAV
+* SCP
 * SCM (in progress)
-
-%package provider-test
-Summary:        provider-test module for %{pkg_name}
-
-%description provider-test
-provider-test module for %{pkg_name}.
 
 %package provider-api
 Summary:        provider-api module for %{pkg_name}
@@ -101,12 +82,6 @@ Summary:        http-shared module for %{pkg_name}
 %description http-shared
 http-shared module for %{pkg_name}.
 
-%package http-shared4
-Summary:        http-shared4 module for %{pkg_name}
-
-%description http-shared4
-http-shared4 module for %{pkg_name}.
-
 %package http-lightweight
 Summary:        http-lightweight module for %{pkg_name}
 
@@ -131,12 +106,13 @@ Summary:        ssh-common module for %{pkg_name}
 %description ssh-common
 ssh-common module for %{pkg_name}.
 
+%if 0
 %package ssh
 Summary:        ssh module for %{pkg_name}
 
 %description ssh
 ssh module for %{pkg_name}.
-
+%endif
 
 %package javadoc
 Summary:        Javadoc for %{pkg_name}
@@ -154,25 +130,19 @@ set -e -x
 %pom_remove_plugin :animal-sniffer-maven-plugin
 %pom_remove_dep :wagon-tck-http wagon-providers/wagon-http
 
-%pom_remove_dep :xercesMinimal wagon-providers/wagon-http-shared
-%pom_xpath_inject "pom:dependencies" \
-   "<dependency>
-      <groupId>xerces</groupId>
-      <artifactId>xercesImpl</artifactId>
-    </dependency>" wagon-providers/wagon-http-shared
-
 # correct groupId for jetty
-%pom_xpath_replace "pom:groupId[text()='org.mortbay.jetty']" "<groupId>org.eclipse.jetty</groupId>"
+%pom_xpath_set "pom:groupId[text()='org.mortbay.jetty']" "org.eclipse.jetty"
 
 # disable tests, missing dependencies
 %pom_disable_module wagon-tcks
-%pom_disable_module wagon-ssh-common-test wagon-providers/pom.xml
+%pom_disable_module wagon-ssh-common-test wagon-providers
+%pom_disable_module wagon-ssh wagon-providers
+%pom_disable_module wagon-provider-test
+%pom_remove_dep :wagon-provider-test
+%pom_remove_dep :wagon-provider-test wagon-providers
 
 # missing dependencies
 %pom_disable_module wagon-webdav-jackrabbit wagon-providers
-
-%pom_change_dep -rf org.apache.httpcomponents:httpclient ::4.2
-%pom_change_dep -rf org.apache.httpcomponents:httpcore ::4.2
 %{?scl:EOF}
 
 %build
@@ -196,114 +166,93 @@ set -e -x
 %{?scl:EOF}
 
 %files -f .mfiles
-%{_javadir}/%{pkg_name}
-%dir %{_mavenpomdir}/%{pkg_name}
 %doc LICENSE NOTICE DEPENDENCIES
 %files provider-api -f .mfiles-wagon-provider-api
 %dir %{_javadir}/%{pkg_name}
-%dir %{_mavenpomdir}/%{pkg_name}
 %files providers -f .mfiles-wagon-providers
-%dir %{_javadir}/%{pkg_name}
-%dir %{_mavenpomdir}/%{pkg_name}
 %files file -f .mfiles-wagon-file
-%dir %{_javadir}/%{pkg_name}
-%dir %{_mavenpomdir}/%{pkg_name}
 %files ftp -f .mfiles-wagon-ftp
-%dir %{_javadir}/%{pkg_name}
-%dir %{_mavenpomdir}/%{pkg_name}
 %files http -f .mfiles-wagon-http
-%dir %{_javadir}/%{pkg_name}
-%dir %{_mavenpomdir}/%{pkg_name}
 %files http-shared -f .mfiles-wagon-http-shared
-%dir %{_javadir}/%{pkg_name}
-%dir %{_mavenpomdir}/%{pkg_name}
-%files http-shared4 -f .mfiles-wagon-http-shared4
-%dir %{_javadir}/%{pkg_name}
-%dir %{_mavenpomdir}/%{pkg_name}
 %files http-lightweight -f .mfiles-wagon-http-lightweight
-%dir %{_javadir}/%{pkg_name}
-%dir %{_mavenpomdir}/%{pkg_name}
 %files scm -f .mfiles-wagon-scm
-%dir %{_javadir}/%{pkg_name}
-%dir %{_mavenpomdir}/%{pkg_name}
 %files ssh-external -f .mfiles-wagon-ssh-external
-%dir %{_javadir}/%{pkg_name}
-%dir %{_mavenpomdir}/%{pkg_name}
 %files ssh-common -f .mfiles-wagon-ssh-common
-%dir %{_javadir}/%{pkg_name}
-%dir %{_mavenpomdir}/%{pkg_name}
+%if 0
 %files ssh -f .mfiles-wagon-ssh
-%dir %{_javadir}/%{pkg_name}
-%dir %{_mavenpomdir}/%{pkg_name}
-%files provider-test -f .mfiles-wagon-provider-test
-%dir %{_javadir}/%{pkg_name}
-%dir %{_mavenpomdir}/%{pkg_name}
+%endif
 
 %files javadoc -f .mfiles-javadoc
 %doc LICENSE NOTICE DEPENDENCIES
 
 %changelog
-* Mon Jan 11 2016 Michal Srb <msrb@redhat.com> - 0:2.4-3.16
-- maven33 rebuild #2
+* Mon Jan 18 2016 Michal Srb <msrb@redhat.com> - 0:2.10-1.1
+- Prepare for SCL build
 
-* Sat Jan 09 2016 Michal Srb <msrb@redhat.com> - 0:2.4-3.15
-- maven33 rebuild
+* Mon Sep 14 2015 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.10-1
+- Update to upstream version 2.10
 
-* Thu Jan 15 2015 Michael Simacek <msimacek@redhat.com> - 0:2.4-3.14
-- Add common dirs to subpackages
+* Wed Jul 08 2015 Michael Simacek <msimacek@redhat.com> - 0:2.9-4
+- Remove unnecessary BuildRequires
 
-* Thu Jan 15 2015 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.4-3.13
-- Add directory ownership on %%{_mavenpomdir} subdir
+* Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:2.9-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
 
-* Tue Jan 13 2015 Michal Srb <msrb@redhat.com> - 2.4-3.12
-- Build against httpcomponents 4.2 (compat)
-- Fix BR
+* Tue May 12 2015 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.9-2
+- Disable webdav-jackrabbit provides
 
-* Tue Jan 13 2015 Michael Simacek <msimacek@redhat.com> - 0:2.4-3.11
-- Mass rebuild 2015-01-13
+* Tue Apr 21 2015 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.9-1
+- Update to upstream version 2.9
 
-* Tue Jan 06 2015 Michael Simacek <msimacek@redhat.com> - 0:2.4-3.10
-- Mass rebuild 2015-01-06
+* Wed Nov 12 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.8-1
+- Update to upstream version 2.8
 
-* Mon May 26 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.4-3.9
-- Mass rebuild 2014-05-26
+* Wed Sep 17 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.7-1
+- Update to upstream version 2.7
 
-* Wed Mar  5 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.4-3.8
-- Remove requires on parent POM
+* Thu Aug 21 2014 Michael Simacek <msimacek@redhat.com> - 0:2.6-10
+- Enable webdav-jackrabbit module
 
-* Fri Feb 28 2014 Michael Simacek <msimacek@redhat.com> - 0:2.4-3.7
-- Require main package
+* Mon Jun 30 2014 Michael Simacek <msimacek@redhat.com> - 0:2.6-9
+- Obsolete main package instead of requiring it
 
-* Thu Feb 20 2014 Michael Simacek <msimacek@redhat.com> - 0:2.4-3.6
+* Fri Jun 27 2014 Michael Simacek <msimacek@redhat.com>
+- Require main package from provider-api
+- Fix maven-parent BR
+
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:2.6-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Wed May 28 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.6-6
+- Rebuild to regenerate Maven auto-requires
+
+* Thu Mar 06 2014 Stanislav Ochotnicky <sochotnicky@redhat.com> - 0:2.6-5
+- Use Requires: java-headless rebuild (#1067528)
+
+* Thu Feb 20 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.6-4
+- Add requires on all modules to main package
+
+* Thu Feb 20 2014 Michael Simacek <msimacek@redhat.com> - 0:2.6-3
 - Split into subpackages
 
-* Wed Feb 19 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.4-3.5
-- Mass rebuild 2014-02-19
+* Wed Feb 19 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.6-2
+- Fix unowned directory
 
-* Tue Feb 18 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.4-3.4
-- Mass rebuild 2014-02-18
+* Mon Jan  6 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.6-1
+- Update to upstream version 2.6
 
-* Mon Feb 17 2014 Michal Srb <msrb@redhat.com> - 0:2.4-3.3
-- SCL-ize BR/R
-
-* Thu Feb 13 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.4-3.2
-- Rebuild to regenerate auto-requires
-
-* Tue Feb 11 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.4-3.1
-- First maven30 software collection build
-
-* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 02.4-3
-- Mass rebuild 2013-12-27
-
-* Mon Sep 23 2013 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.4-2.2
+* Mon Sep 23 2013 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.5-2
 - Add shaded alias for wagon-http
+
+* Tue Sep 17 2013 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.5-1
+- Update to upstream version 2.5
+
+* Thu Aug 29 2013 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.4-3
+- Disable unused wagon-provider-test module
+- Resolves: rhbz#1002480
 
 * Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:2.4-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
-
-* Fri Jun 28 2013 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.4-2
-- Rebuild to regenerate API documentation
-- Resolves: CVE-2013-1571
 
 * Fri Mar 01 2013 Michal Srb <msrb@redhat.com> - 0:2.4-1
 - Port to jetty 9
