@@ -4,7 +4,7 @@
 
 Name:           %{?scl_prefix}%{pkg_name}
 Version:        2.10
-Release:        1.1%{?dist}
+Release:        1.2%{?dist}
 Epoch:          0
 Summary:        Tools to manage artifacts and deployment
 License:        ASL 2.0
@@ -15,7 +15,7 @@ Patch0:         0001-Port-to-jetty-9.patch
 
 BuildArch:      noarch
 
-BuildRequires:  %{?scl_prefix_java_common}maven-local
+BuildRequires:  %{?scl_prefix}maven-local
 BuildRequires:  %{?scl_prefix_java_common}mvn(com.jcraft:jsch)
 BuildRequires:  %{?scl_prefix_java_common}mvn(commons-io:commons-io)
 BuildRequires:  %{?scl_prefix_java_common}mvn(commons-lang:commons-lang)
@@ -186,6 +186,9 @@ set -e -x
 %doc LICENSE NOTICE DEPENDENCIES
 
 %changelog
+* Mon Feb 08 2016 Michal Srb <msrb@redhat.com> - 0:2.10-1.2
+- Fix BR on maven-local & co.
+
 * Mon Jan 18 2016 Michal Srb <msrb@redhat.com> - 0:2.10-1.1
 - Prepare for SCL build
 
