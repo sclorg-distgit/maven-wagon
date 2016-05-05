@@ -4,7 +4,7 @@
 
 Name:           %{?scl_prefix}%{pkg_name}
 Version:        2.10
-Release:        1.2%{?dist}
+Release:        1.3%{?dist}
 Epoch:          0
 Summary:        Tools to manage artifacts and deployment
 License:        ASL 2.0
@@ -166,9 +166,11 @@ set -e -x
 %{?scl:EOF}
 
 %files -f .mfiles
+%dir %{_mavenpomdir}/%{pkg_name}
 %doc LICENSE NOTICE DEPENDENCIES
 %files provider-api -f .mfiles-wagon-provider-api
 %dir %{_javadir}/%{pkg_name}
+%dir %{_mavenpomdir}/%{pkg_name}
 %files providers -f .mfiles-wagon-providers
 %files file -f .mfiles-wagon-file
 %files ftp -f .mfiles-wagon-ftp
@@ -186,6 +188,9 @@ set -e -x
 %doc LICENSE NOTICE DEPENDENCIES
 
 %changelog
+* Thu Apr 14 2016 Michal Srb <msrb@redhat.com> - 0:2.10-1.3
+- Fix directory ownership (Resolves: rhbz#1325866)
+
 * Mon Feb 08 2016 Michal Srb <msrb@redhat.com> - 0:2.10-1.2
 - Fix BR on maven-local & co.
 
